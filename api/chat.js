@@ -3,6 +3,8 @@
 // the Anthropic API. The API key and GG's persona stay on the server —
 // neither is ever sent to the browser.
 
+const { Redis } = require('@upstash/redis');
+
 const SYSTEM_PROMPT = `You are GG's friendly assistant. You help her with all her questions from the world to fiction to her emotions and concerns
 You are warm, clear, very patient and practical, and you always end with one helpful next step.`;
 
@@ -10,6 +12,8 @@ const MODEL = 'claude-sonnet-5'; // confirmed against platform.claude.com/docs, 
 const MAX_TOKENS = 1000;
 const MAX_HISTORY_MESSAGES = 40; // keep recent context only, bounds cost per request
 const MAX_MESSAGE_CHARS = 6000;
+const LOG_KEY = 'ggs-friend:log';
+const LOG_MAX_ENTRIES = 500; // keep the log from growing forever
 
 function checkPasscode(req, res) {
   const required = process.env.ACCESS_PASSCODE;
@@ -18,6 +22,27 @@ function checkPasscode(req, res) {
   if (provided && provided === required) return true;
   res.status(401).json({ error: "That passcode didn't match." });
   return false;
+}
+
+// Saves each exchange to Redis so it can be read later from /history.html.
+// GG knows this is on. Fully optional — if the Redis env vars aren't set,
+// this silently does nothing, and a failure here never breaks the chat.
+async function logExchange(userMessage, reply) {
+  const url = process.env.REDIS_KV_REST_API_URL;
+  const token = process.env.REDIS_KV_REST_API_TOKEN;
+  if (!url || !token) return;
+
+  try {
+    const redis = new Redis({ url: url, token: token });
+    await redis.rpush(LOG_KEY, JSON.stringify({
+      at: new Date().toISOString(),
+      message: userMessage,
+      reply: reply
+    }));
+    await redis.ltrim(LOG_KEY, -LOG_MAX_ENTRIES, -1);
+  } catch (err) {
+    console.error('Failed to write log entry', err);
+  }
 }
 
 module.exports = async function handler(req, res) {
@@ -79,6 +104,11 @@ module.exports = async function handler(req, res) {
     const data = await upstream.json();
     const block = Array.isArray(data.content) ? data.content.find(function (b) { return b.type === 'text'; }) : null;
     const reply = block && block.text ? block.text : "I'm here, but I couldn't quite form a reply. Could you try that again?";
+
+    const lastUserMessage = cleaned[cleaned.length - 1];
+    if (lastUserMessage && lastUserMessage.role === 'user') {
+      await logExchange(lastUserMessage.content, reply);
+    }
 
     res.status(200).json({ reply: reply });
   } catch (err) {
