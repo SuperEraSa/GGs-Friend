@@ -5,5 +5,8 @@
   "description": "GG's Friend - a calm chat companion, backed by Claude.",
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "@upstash/redis": "1.34.3"
   }
 }
