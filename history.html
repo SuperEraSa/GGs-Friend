@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GG's Friend — Log</title>
+<meta name="description" content="Conversation log for GG's Friend.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-a: #eaf3f1;
+    --bg-b: #e7ecfb;
+    --surface: rgba(255, 255, 255, 0.66);
+    --surface-strong: rgba(255, 255, 255, 0.85);
+    --surface-border: rgba(255, 255, 255, 0.8);
+    --ink: #2e3444;
+    --ink-soft: #667085;
+    --ink-faint: #97a0b0;
+    --accent: #3f8f81;
+    --accent-ink: #ffffff;
+    --accent-soft: #dcefea;
+    --card-border: rgba(255, 255, 255, 0.9);
+    --shadow-soft: 0 8px 30px rgba(60, 80, 100, 0.10);
+    --ring: rgba(63, 143, 129, 0.35);
+    --danger: #b3564f;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg-a: #131924;
+      --bg-b: #1a2130;
+      --surface: rgba(255, 255, 255, 0.06);
+      --surface-strong: rgba(255, 255, 255, 0.09);
+      --surface-border: rgba(255, 255, 255, 0.12);
+      --ink: #e8ecf3;
+      --ink-soft: #a7b0bf;
+      --ink-faint: #6e7787;
+      --accent: #6fc6b6;
+      --accent-ink: #0f1a17;
+      --accent-soft: rgba(111, 198, 182, 0.14);
+      --card-border: rgba(255, 255, 255, 0.14);
+      --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.35);
+      --ring: rgba(111, 198, 182, 0.4);
+      --danger: #e08b85;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg-a: #131924;
+    --bg-b: #1a2130;
+    --surface: rgba(255, 255, 255, 0.06);
+    --surface-strong: rgba(255, 255, 255, 0.09);
+    --surface-border: rgba(255, 255, 255, 0.12);
+    --ink: #e8ecf3;
+    --ink-soft: #a7b0bf;
+    --ink-faint: #6e7787;
+    --accent: #6fc6b6;
+    --accent-ink: #0f1a17;
+    --accent-soft: rgba(111, 198, 182, 0.14);
+    --card-border: rgba(255, 255, 255, 0.14);
+    --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.35);
+    --ring: rgba(111, 198, 182, 0.4);
+    --danger: #e08b85;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--ink);
+    background: var(--bg-a);
+    background-image:
+      radial-gradient(60% 50% at 10% 0%, var(--bg-b) 0%, transparent 60%),
+      linear-gradient(180deg, var(--bg-a), var(--bg-a));
+    background-attachment: fixed;
+    min-height: 100vh;
+    padding: 32px 20px 60px;
+  }
+
+  .wrap { max-width: 720px; margin: 0 auto; }
+
+  header.page {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+  }
+  header.page h1 {
+    font-family: 'Quicksand', sans-serif;
+    font-weight: 700;
+    font-size: 1.4rem;
+    margin: 0;
+  }
+  header.page p { margin: 4px 0 0; color: var(--ink-soft); font-size: 0.88rem; }
+
+  button.ghost {
+    padding: 8px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--surface-border);
+    background: var(--surface);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+  button.ghost:hover { background: var(--surface-strong); }
+
+  .entry {
+    background: var(--surface);
+    border: 1px solid var(--card-border);
+    border-radius: 18px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    backdrop-filter: blur(14px);
+  }
+  .entry time {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    margin-bottom: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+  .entry .who {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 10px 0 4px;
+  }
+  .entry .who:first-of-type { margin-top: 0; }
+  .entry p {
+    margin: 0 0 4px;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  .empty, .loading, .error {
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+    padding: 40px 20px;
+  }
+  .error { color: var(--danger); }
+
+  .gate {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .gate__card {
+    width: 100%;
+    max-width: 340px;
+    background: var(--surface-strong);
+    border: 1px solid var(--surface-border);
+    border-radius: 22px;
+    padding: 28px 24px;
+    text-align: center;
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: blur(18px);
+  }
+  .gate__card h2 { font-family: 'Quicksand', sans-serif; margin: 0 0 6px; font-size: 1.1rem; }
+  .gate__card p { color: var(--ink-soft); font-size: 0.85rem; margin: 0 0 16px; }
+  .gate__card input {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid var(--surface-border);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 0.9rem;
+    outline: none;
+    margin-bottom: 10px;
+  }
+  .gate__card input:focus { box-shadow: 0 0 0 3px var(--ring); }
+  .gate__card button.primary {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: none;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+  }
+  .gate__error { color: var(--danger); font-size: 0.8rem; min-height: 1em; margin-top: 8px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="gate" id="gate">
+    <div class="gate__card">
+      <h2>GG's Friend — Log</h2>
+      <p>This page is just for you. Enter the admin passcode.</p>
+      <input type="password" id="gate-input" placeholder="Admin passcode" autocomplete="off">
+      <button class="primary" id="gate-submit" type="button">Open</button>
+      <div class="gate__error" id="gate-error"></div>
+    </div>
+  </div>
+
+  <div id="content" hidden>
+    <header class="page">
+      <div>
+        <h1>Conversation log</h1>
+        <p>Newest first. Refreshes each time you open this page.</p>
+      </div>
+      <button class="ghost" id="refresh">Refresh</button>
+    </header>
+    <div id="list"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const gateEl = document.getElementById('gate');
+  const contentEl = document.getElementById('content');
+  const gateInput = document.getElementById('gate-input');
+  const gateSubmit = document.getElementById('gate-submit');
+  const gateError = document.getElementById('gate-error');
+  const listEl = document.getElementById('list');
+  const refreshBtn = document.getElementById('refresh');
+  const PASSCODE_KEY = 'ggs-friend-admin-passcode';
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  function formatTime(iso) {
+    try {
+      return new Date(iso).toLocaleString();
+    } catch (e) {
+      return iso;
+    }
+  }
+
+  async function loadHistory() {
+    const pass = sessionStorage.getItem(PASSCODE_KEY) || '';
+    listEl.innerHTML = '<div class="loading">Loading…</div>';
+    try {
+      const res = await fetch('/api/history', {
+        headers: { 'x-admin-passcode': pass }
+      });
+      if (res.status === 401) {
+        sessionStorage.removeItem(PASSCODE_KEY);
+        contentEl.hidden = true;
+        gateEl.hidden = false;
+        gateError.textContent = 'Session expired — enter the passcode again.';
+        return;
+      }
+      const data = await res.json();
+      if (!res.ok) {
+        listEl.innerHTML = '<div class="error">' + escapeHtml(data.error || 'Something went wrong.') + '</div>';
+        return;
+      }
+      const entries = data.entries || [];
+      if (entries.length === 0) {
+        listEl.innerHTML = '<div class="empty">No conversations yet. Once GG sends a message, it\'ll show up here.</div>';
+        return;
+      }
+      listEl.innerHTML = entries.map(function (e) {
+        return '<div class="entry">' +
+          '<time>' + escapeHtml(formatTime(e.at)) + '</time>' +
+          '<div class="who">GG</div><p>' + escapeHtml(e.message) + '</p>' +
+          '<div class="who">GG\'s Friend</div><p>' + escapeHtml(e.reply) + '</p>' +
+          '</div>';
+      }).join('');
+    } catch (err) {
+      listEl.innerHTML = '<div class="error">Couldn\'t reach the server. Check your connection and try again.</div>';
+    }
+  }
+
+  function openContent() {
+    gateEl.hidden = true;
+    contentEl.hidden = false;
+    loadHistory();
+  }
+
+  refreshBtn.addEventListener('click', loadHistory);
+
+  const saved = sessionStorage.getItem(PASSCODE_KEY);
+  if (saved !== null) openContent();
+
+  gateSubmit.addEventListener('click', async function () {
+    const val = gateInput.value;
+    if (!val) {
+      gateError.textContent = 'Enter the passcode.';
+      return;
+    }
+    gateSubmit.disabled = true;
+    gateError.textContent = '';
+    try {
+      const res = await fetch('/api/history', {
+        headers: { 'x-admin-passcode': val }
+      });
+      if (res.ok || res.status !== 401) {
+        sessionStorage.setItem(PASSCODE_KEY, val);
+        openContent();
+      } else {
+        gateError.textContent = "That's not quite it — try again.";
+      }
+    } catch (err) {
+      gateError.textContent = "Couldn't reach the server — check your connection.";
+    } finally {
+      gateSubmit.disabled = false;
+    }
+  });
+  gateInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') gateSubmit.click();
+  });
+})();
+</script>
+</body>
+</html>
