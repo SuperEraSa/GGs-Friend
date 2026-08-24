@@ -1,0 +1,9 @@
+{
+  "name": "ggs-friend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GG's Friend - a calm chat companion, backed by Claude.",
+  "engines": {
+    "node": ">=18"
+  }
+}
